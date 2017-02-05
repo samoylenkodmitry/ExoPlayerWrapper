@@ -9,16 +9,12 @@ import android.view.Surface;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.Renderer;
-import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioCapabilities;
-import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
-import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
@@ -29,7 +25,6 @@ import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.dash.manifest.DashManifestParser;
@@ -37,9 +32,7 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -49,11 +42,16 @@ import com.google.android.exoplayer2.upstream.cache.SimpleCache;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
+import com.samart.adaptivevideoplayer.listeners.PlayerAdaptiveMediaSourceEventListener;
+import com.samart.adaptivevideoplayer.listeners.PlayerAudioRendererEventListener;
+import com.samart.adaptivevideoplayer.listeners.PlayerDefaultFormatEventListener;
+import com.samart.adaptivevideoplayer.listeners.PlayerDrmSessionEventListener;
+import com.samart.adaptivevideoplayer.listeners.PlayerEventListener;
+import com.samart.adaptivevideoplayer.listeners.PlayerVideoRendererEventListener;
 import com.samart.adaptivevideoplayer.model.ContentData;
 import com.samart.adaptivevideoplayer.model.Format;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.regex.Pattern;
 
 public class ExoPlayerAdapter {
@@ -111,6 +109,7 @@ public class ExoPlayerAdapter {
 	private Surface mSurface;
 	private DataSource.Factory mVideoSourceListener;
 	private ContentData mContent;
+	private final DataSource.Factory mDataSourceFactory;
 	
 	
 	public ExoPlayerAdapter(final Context context) {
@@ -126,6 +125,9 @@ public class ExoPlayerAdapter {
 		if (sBandwidthMeter == null) {
 			sBandwidthMeter = new DefaultBandwidthMeter();
 		}
+		mDataSourceFactory = new DefaultDataSourceFactory(
+			mContext, Util.getUserAgent(mContext, mUserAgent), sBandwidthMeter
+		);
 	}
 	
 	public void setFileCacheSize(final int cacheSize) {
@@ -133,184 +135,25 @@ public class ExoPlayerAdapter {
 	}
 	
 	private void createListeners() {
-		mDrmSessionListener = new DefaultDrmSessionManager.EventListener() {
-			
-			@Override
-			public void onDrmKeysLoaded() {
-				
-			}
-			
-			@Override
-			public void onDrmSessionManagerError(final Exception e) {
-				
-			}
-			
-			@Override
-			public void onDrmKeysRestored() {
-				
-			}
-			
-			@Override
-			public void onDrmKeysRemoved() {
-				
-			}
-		};
-		mDefaultFormatListener = new ExtractorMediaSource.EventListener() {
-			
-			@Override
-			public void onLoadError(final IOException error) {
-				
-			}
-		};
-		mAdaptiveFormatListener = new AdaptiveMediaSourceEventListener() {
-			
-			@Override
-			public void onLoadStarted(final DataSpec dataSpec, final int dataType, final int trackType, final com.google.android.exoplayer2.Format trackFormat, final int trackSelectionReason, final Object trackSelectionData, final long mediaStartTimeMs, final long mediaEndTimeMs, final long elapsedRealtimeMs) {
-				
-			}
-			
-			@Override
-			public void onLoadCompleted(final DataSpec dataSpec, final int dataType, final int trackType, final com.google.android.exoplayer2.Format trackFormat, final int trackSelectionReason, final Object trackSelectionData, final long mediaStartTimeMs, final long mediaEndTimeMs, final long elapsedRealtimeMs, final long loadDurationMs, final long bytesLoaded) {
-				
-			}
-			
-			@Override
-			public void onLoadCanceled(final DataSpec dataSpec, final int dataType, final int trackType, final com.google.android.exoplayer2.Format trackFormat, final int trackSelectionReason, final Object trackSelectionData, final long mediaStartTimeMs, final long mediaEndTimeMs, final long elapsedRealtimeMs, final long loadDurationMs, final long bytesLoaded) {
-				
-			}
-			
-			@Override
-			public void onLoadError(final DataSpec dataSpec, final int dataType, final int trackType, final com.google.android.exoplayer2.Format trackFormat, final int trackSelectionReason, final Object trackSelectionData, final long mediaStartTimeMs, final long mediaEndTimeMs, final long elapsedRealtimeMs, final long loadDurationMs, final long bytesLoaded, final IOException error, final boolean wasCanceled) {
-				
-			}
-			
-			@Override
-			public void onUpstreamDiscarded(final int trackType, final long mediaStartTimeMs, final long mediaEndTimeMs) {
-				
-			}
-			
-			@Override
-			public void onDownstreamFormatChanged(final int trackType, final com.google.android.exoplayer2.Format trackFormat, final int trackSelectionReason, final Object trackSelectionData, final long mediaTimeMs) {
-				
-			}
-		};
+		mDrmSessionListener = new PlayerDrmSessionEventListener(mMessageHandler);
+		mDefaultFormatListener = new PlayerDefaultFormatEventListener(mMessageHandler);
+		mAdaptiveFormatListener = new PlayerAdaptiveMediaSourceEventListener(mMessageHandler);
 		
-		mVideoRendererListener = new VideoRendererEventListener() {
-			
-			@Override
-			public void onVideoEnabled(final DecoderCounters counters) {
-				
-			}
-			
-			@Override
-			public void onVideoDecoderInitialized(final String decoderName, final long initializedTimestampMs, final long initializationDurationMs) {
-				
-			}
-			
-			@Override
-			public void onVideoInputFormatChanged(final com.google.android.exoplayer2.Format format) {
-				
-			}
-			
-			@Override
-			public void onDroppedFrames(final int count, final long elapsedMs) {
-				
-			}
-			
-			@Override
-			public void onVideoSizeChanged(final int width, final int height, final int unappliedRotationDegrees, final float pixelWidthHeightRatio) {
-				
-			}
-			
-			@Override
-			public void onRenderedFirstFrame(final Surface surface) {
-				
-			}
-			
-			@Override
-			public void onVideoDisabled(final DecoderCounters counters) {
-				
-			}
-		};
+		mVideoRendererListener = new PlayerVideoRendererEventListener(mMessageHandler);
 		
-		mAudioRendererListener = new AudioRendererEventListener() {
-			
-			@Override
-			public void onAudioEnabled(final DecoderCounters counters) {
-				
-			}
-			
-			@Override
-			public void onAudioSessionId(final int audioSessionId) {
-				
-			}
-			
-			@Override
-			public void onAudioDecoderInitialized(final String decoderName, final long initializedTimestampMs, final long initializationDurationMs) {
-				
-			}
-			
-			@Override
-			public void onAudioInputFormatChanged(final com.google.android.exoplayer2.Format format) {
-				
-			}
-			
-			@Override
-			public void onAudioTrackUnderrun(final int bufferSize, final long bufferSizeMs, final long elapsedSinceLastFeedMs) {
-				
-			}
-			
-			@Override
-			public void onAudioDisabled(final DecoderCounters counters) {
-				
-			}
-		};
+		mAudioRendererListener = new PlayerAudioRendererEventListener(mMessageHandler);
 		
-		mPlayerListener = new ExoPlayer.EventListener() {
-			
-			@Override
-			public void onTimelineChanged(final Timeline timeline, final Object manifest) {
-				
-			}
-			
-			@Override
-			public void onTracksChanged(final TrackGroupArray trackGroups, final TrackSelectionArray trackSelections) {
-				
-			}
-			
-			@Override
-			public void onLoadingChanged(final boolean isLoading) {
-				
-			}
-			
-			@Override
-			public void onPlayerStateChanged(final boolean playWhenReady, final int playbackState) {
-				
-			}
-			
-			@Override
-			public void onPlayerError(final ExoPlaybackException error) {
-				
-			}
-			
-			@Override
-			public void onPositionDiscontinuity() {
-				
-			}
-		};
+		mPlayerListener = new PlayerEventListener(mMessageHandler);
 	}
 	
 	public void init() {
-		
-		if (mContent.format == Format.DASH) {
-			try {
-				mDrmSessionManager = DefaultDrmSessionManager.<FrameworkMediaCrypto>newWidevineInstance(
-					new DashWidevineDrmCallback(mDrmRequestProvider),
-					null,
-					mMessageHandler, mDrmSessionListener);
-			} catch (final UnsupportedDrmException e) {
-				mDrmSessionManager = null;
-			}
+		try {
+			mDrmSessionManager = DefaultDrmSessionManager.<FrameworkMediaCrypto>newWidevineInstance(
+				new DashWidevineDrmCallback(mDrmRequestProvider),
+				null,
+				mMessageHandler, mDrmSessionListener);
+		} catch (final UnsupportedDrmException e) {
+			mDrmSessionManager = null;
 		}
 		
 		mVideoRenderer =
@@ -339,6 +182,8 @@ public class ExoPlayerAdapter {
 		);
 		
 		mPlayer.addListener(mPlayerListener);
+		
+		setSurface(mSurface);
 	}
 	
 	public void setSurface(final Surface surface) {
@@ -351,24 +196,16 @@ public class ExoPlayerAdapter {
 		}
 	}
 	
-	public void setContent(final ContentData content) {
+	public void prepare(final ContentData content) {
 		mContent = content;
-	}
-	
-	public void prepare() {
-		
-		setSurface(mSurface);
-		
-		final DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
-			mContext, Util.getUserAgent(mContext, mUserAgent), sBandwidthMeter
-		);
 		
 		final String keyPrefix = createContentCacheKeyPrefix();
 		
-		final DataSource.Factory cacheDataSourceFactory = new CustomCacheKeySourceFactory(sFileCache, dataSourceFactory, mContent.format, keyPrefix);
-		
 		final MediaSource mediaSource = buildMediaSource(
-			mContent.format, Uri.parse(mContent.url), cacheDataSourceFactory, keyPrefix
+			mContent.format,
+			Uri.parse(mContent.url),
+			new CustomCacheKeySourceFactory(sFileCache, mDataSourceFactory, mContent.format, keyPrefix),
+			keyPrefix
 		);
 		
 		mPlayer.prepare(mediaSource);
