@@ -17,6 +17,7 @@ public final class NetworkUtils {
 	
 	public static final String REQUEST_METHOD_GET = "GET";
 	public static final String REQUEST_METHOD_POST = "POST";
+	public static final String CONTENT_TYPE_OCTET_STREAM = "application/octet-stream";
 	
 	public interface Handler {
 		

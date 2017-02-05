@@ -1,4 +1,4 @@
-package com.samart.adaptivevideoplayer;
+package com.samart.adaptivevideoplayer.model;
 
 
 public enum Format {
